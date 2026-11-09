@@ -37,6 +37,7 @@ Based on $ARGUMENTS:
 - `page N`: newStart = (N - 1) * 10
 
 Modify the `start` parameter in the current search URL. If `start` doesn't exist in the URL, append `&start={newStart}`.
+Keep the current domain (`.com.pr`, `.com.pk`, or `.com`) as-is — don't change it.
 
 ### 2. Navigate
 
@@ -103,6 +104,12 @@ Page {page} for "{query}" ({total}):
 
 {hasNext ? "More results available — ask me for the next page." : "No more results."}
 ```
+
+## Blocking & CAPTCHA Handling
+
+- **Hard IP block** ("unusual traffic" sorry page with no reCAPTCHA form): try domains in order `.com.pr` → `.com.pk` → `.com` → `.com.hk` (one attempt each). If **all four hard-block**: **STOP, do NOT auto-retry** — tell the user to wait 10–30 minutes or switch network (proxy / mobile hotspot), fall back to a web-search tool for content, and defer citation counts / `data-cid`. Full procedure: `gs-search` SKILL.md.
+- **Solvable CAPTCHA** (`#gs_captcha_ccl` or a reCAPTCHA form/iframe present): tell the user to complete it in-browser, wait for confirmation, then retry extraction.
+- While paginating, keep the domain that is already working — don't switch domains mid-session.
 
 ## Notes
 
