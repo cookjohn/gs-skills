@@ -110,6 +110,11 @@ Query parameters: {list the parameters used}
 
 Always show the constructed URL parameters so the user understands how the query was built.
 
+## Blocking & CAPTCHA Handling
+
+- **Hard IP block** ("unusual traffic" sorry page with no reCAPTCHA form): try domains in order `.com.pr` → `.com.pk` → `.com` → `.com.hk` (one attempt each). If **all four hard-block**: **STOP, do NOT auto-retry** — tell the user to wait 10–30 minutes or switch network (proxy / mobile hotspot), fall back to a web-search tool for content, and defer citation counts / `data-cid`. Full procedure: `gs-search` SKILL.md.
+- **Solvable CAPTCHA** (`#gs_captcha_ccl` or a reCAPTCHA form/iframe present): tell the user to complete it in-browser, wait for confirmation, then retry extraction.
+
 ## Notes
 
 - This skill uses 2 tool calls: `navigate_page` + `evaluate_script`

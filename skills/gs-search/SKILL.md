@@ -17,7 +17,13 @@ $ARGUMENTS contains the search keyword(s).
 ### 1. Navigate
 
 Use `mcp__chrome-devtools__navigate_page`:
-- url: `https://scholar.google.com/scholar?q={URL_ENCODED_KEYWORDS}&hl=en&num=10`
+
+**Preferred URL** (use `.com.pr` regional domain — more likely to show solvable CAPTCHA rather than hard IP block):
+- url: `https://scholar.google.com.pr/scholar?q={URL_ENCODED_KEYWORDS}&hl=en&num=10`
+
+**Fallback** (if `.com.pr` fails):
+- `https://scholar.google.com.pk/scholar?q={URL_ENCODED_KEYWORDS}&hl=en&num=10`
+- `https://scholar.google.com/scholar?q={URL_ENCODED_KEYWORDS}&hl=en&num=10`
 
 ### 2. Extract results (evaluate_script)
 
@@ -97,10 +103,31 @@ When the user wants to:
 - **See who cited a paper**: use `gs-cited-by` with the data-cid
 - **Export to Zotero**: use `gs-export` with the data-cid(s)
 
-## CAPTCHA Handling
+## Blocking & CAPTCHA Handling
 
-If the result contains `{error: 'captcha'}`:
-1. Tell the user: "Google Scholar is requesting CAPTCHA verification. Please complete it in your browser."
+### Hard IP Block ("unusual traffic" sorry page)
+
+**Detection**: page redirects to `https://www.google.com/sorry/index?...`, body contains "unusual traffic", and there is NO reCAPTCHA form (no `#gs_captcha_ccl`, no reCAPTCHA iframe). This is an **IP-level hard block** — it cannot be solved in-browser.
+
+**Procedure** (validated against live incident, 2026-05):
+
+1. Try regional domains **one at a time**, stop at the first that returns results:
+   - `https://scholar.google.com.pr/scholar?q=...`
+   - `https://scholar.google.com.pk/scholar?q=...`
+   - `https://scholar.google.com/scholar?q=...`
+   - `https://scholar.google.com.hk/scholar?q=...`
+2. If a domain shows a **solvable reCAPTCHA** (see below) → ask the user to solve it, wait for confirmation, then retry extraction.
+3. If **all four domains** return the hard sorry page with no form:
+   - **STOP immediately. Do NOT retry automatically** — repeated attempts make the block worse and longer.
+   - Tell the user: "Google Scholar is hard-blocking this network with an 'unusual traffic' sorry page (no CAPTCHA form on any of the four domains). Please wait 10–30 minutes, or switch networks (proxy / mobile hotspot), then tell me to retry."
+   - **Fall back to a web-search tool** to complete the content part of the task (titles, authors, journals, years, DOIs are obtainable without Scholar). Explicitly defer citation counts and `data-cid` until Scholar is reachable.
+   - Record which domains were attempted and state the block scope in the final report.
+4. A single retry is allowed only after **user confirmation** or a **≥10-minute idle gap**.
+
+### CAPTCHA (solvable)
+
+If `#gs_captcha_ccl` exists or a reCAPTCHA form/iframe is present:
+1. Tell the user: "Google Scholar requires human verification — please complete the CAPTCHA in your browser."
 2. Wait for user confirmation
 3. Retry the evaluate_script extraction
 

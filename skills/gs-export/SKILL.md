@@ -69,10 +69,10 @@ async () => {
 
 ### Step 2: Parse BibTeX and push to Zotero
 
-Save the BibTeX data as JSON, then call the push script:
+Save the BibTeX data as JSON, then call the push script. Determine the script path from this skill's base directory (given at the top of the response when this skill is loaded):
 
 ```bash
-python "E:/gscholar-skills/.claude/skills/gs-export/scripts/push_to_zotero.py" /tmp/gs_papers.json
+python "<SKILL_BASE_DIR>/scripts/push_to_zotero.py" /tmp/gs_papers.json
 ```
 
 Before calling the script, construct a JSON file at `/tmp/gs_papers.json` containing paper data parsed from BibTeX. Parse the BibTeX yourself and create the JSON array:
@@ -142,6 +142,11 @@ For multiple papers, process sequentially to avoid CAPTCHA:
 2. Navigate to each BibTeX URL one at a time
 3. Collect all BibTeX entries
 4. Push all to Zotero in a single batch
+
+## Blocking & CAPTCHA Handling
+
+- **Hard IP block** ("unusual traffic" sorry page with no reCAPTCHA form): try domains in order `.com.pr` → `.com.pk` → `.com` → `.com.hk` (one attempt each). If **all four hard-block**: **STOP, do NOT auto-retry** — tell the user to wait 10–30 minutes or switch network (proxy / mobile hotspot), fall back to a web-search tool for content, and defer citation counts / `data-cid`. Full procedure: `gs-search` SKILL.md.
+- **Solvable CAPTCHA** (`#gs_captcha_ccl` or a reCAPTCHA form/iframe present): tell the user to complete it in-browser, wait for confirmation, then retry extraction.
 
 ## Notes
 
